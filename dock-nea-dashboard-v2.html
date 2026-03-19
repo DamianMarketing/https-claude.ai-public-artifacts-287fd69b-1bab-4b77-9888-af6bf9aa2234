@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dock NEA — Dashboard | Command 360</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:#0a0e1a;--navy-mid:#111827;--navy-card:#151c2e;--navy-border:#1e2d45;
+    --cyan:#00c2e0;--cyan-dim:rgba(0,194,224,0.12);--cyan-glow:rgba(0,194,224,0.3);
+    --white:#f0f4f8;--white-dim:rgba(240,244,248,0.55);--white-muted:rgba(240,244,248,0.25);
+    --green:#00d48a;--green-dim:rgba(0,212,138,0.12);
+    --red:#ff4d6a;--red-dim:rgba(255,77,106,0.12);
+    --yellow:#ffc947;--yellow-dim:rgba(255,201,71,0.12);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--navy);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,194,224,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,194,224,0.03) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
+  .container{max-width:1280px;margin:0 auto;padding:0 24px;position:relative;z-index:1;}
+  header{padding:24px 0 20px;border-bottom:1px solid var(--navy-border);margin-bottom:32px;}
+  .header-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+  .header-left{display:flex;align-items:center;gap:20px;}
+  .logo-box{background:#fff;border-radius:8px;padding:8px 14px;}
+  .logo-box span{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#0a0e1a;letter-spacing:2px;}
+  .divider-v{width:1px;height:36px;background:var(--navy-border);}
+  .agency-tag .label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);font-weight:500;}
+  .agency-tag .name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;color:var(--white-dim);}
+  .header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .period-badge{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:6px;padding:6px 14px;font-size:12px;color:var(--white-dim);font-family:'DM Mono',monospace;}
+  .sync-badge{background:var(--green-dim);border:1px solid var(--green);border-radius:6px;padding:6px 14px;font-size:11px;color:var(--green);font-family:'DM Mono',monospace;cursor:pointer;transition:opacity 0.2s;}
+  .sync-badge:hover{opacity:0.8;}
+  .sync-badge.loading{background:var(--yellow-dim);border-color:var(--yellow);color:var(--yellow);}
+  .sync-badge.error{background:var(--red-dim);border-color:var(--red);color:var(--red);}
+  .tabs{display:flex;margin-bottom:24px;border-bottom:1px solid var(--navy-border);}
+  .tab{padding:10px 20px;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:500;color:var(--white-muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;user-select:none;}
+  .tab:hover{color:var(--white-dim);}
+  .tab.active{color:var(--cyan);border-bottom-color:var(--cyan);}
+  .tab-content{display:none;}
+  .tab-content.active{display:block;}
+  .section-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+  .section-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:2px;opacity:.7;}
+  .section-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;}
+  .section-line{flex:1;height:1px;background:var(--navy-border);}
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:12px;margin-bottom:32px;}
+  .kpi-card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:10px;padding:18px 20px;position:relative;overflow:hidden;transition:border-color .2s,transform .2s;}
+  .kpi-card:hover{border-color:var(--cyan);transform:translateY(-2px);}
+  .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),transparent);opacity:0;transition:opacity .2s;}
+  .kpi-card:hover::before{opacity:1;}
+  .kpi-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--white-muted);font-weight:500;margin-bottom:10px;}
+  .kpi-value{font-family:'Bebas Neue',sans-serif;font-size:30px;line-height:1;color:var(--white);letter-spacing:1px;}
+  .kpi-value.cyan{color:var(--cyan);}
+  .kpi-value.green{color:var(--green);}
+  .kpi-value.yellow{color:var(--yellow);}
+  .kpi-value.red{color:var(--red);}
+  .kpi-sub{font-size:11px;color:var(--white-muted);margin-top:6px;font-family:'DM Mono',monospace;}
+  .kpi-delta{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;margin-top:4px;padding:2px 7px;border-radius:4px;}
+  .kpi-delta.up{background:var(--green-dim);color:var(--green);}
+  .kpi-delta.down{background:var(--red-dim);color:var(--red);}
+  .kpi-delta.neutral{background:var(--yellow-dim);color:var(--yellow);}
+  .table-wrap{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:12px;overflow:hidden;margin-bottom:32px;}
+  .table-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--navy-border);background:rgba(0,194,224,0.04);}
+  .table-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--cyan);}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  thead th{padding:11px 14px;text-align:left;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--white-muted);border-bottom:1px solid var(--navy-border);white-space:nowrap;}
+  tbody tr{border-bottom:1px solid rgba(30,45,69,0.6);transition:background .15s;}
+  tbody tr:hover{background:rgba(0,194,224,0.04);}
+  tbody tr:last-child{border-bottom:none;}
+  tbody td{padding:11px 14px;color:var(--white-dim);white-space:nowrap;}
+  tbody td.week-label{font-family:'DM Mono',monospace;font-size:11px;color:var(--cyan);font-weight:500;}
+  .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;}
+  .tag.ok{background:var(--green-dim);color:var(--green);}
+  .tag.warn{background:var(--yellow-dim);color:var(--yellow);}
+  .tag.empty{background:rgba(30,45,69,0.8);color:var(--white-muted);}
+  .funnel-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;}
+  .funnel-card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:12px;padding:20px;}
+  .funnel-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;color:var(--cyan);margin-bottom:18px;}
+  .funnel-step{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+  .funnel-bar-wrap{flex:1;height:6px;background:var(--navy-border);border-radius:3px;overflow:hidden;}
+  .funnel-bar{height:100%;border-radius:3px;background:var(--cyan);}
+  .funnel-step-label{font-size:11px;color:var(--white-muted);width:120px;flex-shrink:0;}
+  .funnel-step-val{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--white);width:48px;text-align:right;flex-shrink:0;}
+  .funnel-step-pct{font-family:'DM Mono',monospace;font-size:10px;color:var(--white-muted);width:36px;text-align:right;flex-shrink:0;}
+  .week-selector{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+  .week-btn{padding:6px 14px;border-radius:5px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;border:1px solid var(--navy-border);background:var(--navy-card);color:var(--white-muted);transition:all .2s;letter-spacing:1px;}
+  .week-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+  .week-btn.active{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan);}
+  .actions-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;}
+  .actions-card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:12px;overflow:hidden;}
+  .actions-card-header{padding:14px 18px;border-bottom:1px solid var(--navy-border);display:flex;align-items:center;justify-content:space-between;}
+  .actions-card-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;}
+  .actions-card-title.pending{color:var(--yellow);}
+  .actions-card-title.done{color:var(--green);}
+  .count-badge{font-family:'DM Mono',monospace;font-size:11px;padding:2px 8px;border-radius:4px;}
+  .count-badge.pending{background:var(--yellow-dim);color:var(--yellow);}
+  .count-badge.done{background:var(--green-dim);color:var(--green);}
+  .action-item{display:flex;align-items:flex-start;gap:12px;padding:12px 18px;border-bottom:1px solid rgba(30,45,69,0.5);transition:background .15s;}
+  .action-item:last-child{border-bottom:none;}
+  .action-item:hover{background:rgba(0,194,224,0.03);}
+  .action-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+  .action-dot.pending{background:var(--yellow);}
+  .action-dot.in-progress{background:var(--cyan);animation:pulse-dot 1.5s infinite;}
+  .action-dot.done{background:var(--green);}
+  @keyframes pulse-dot{0%,100%{opacity:1;box-shadow:0 0 0 0 var(--cyan-glow)}50%{opacity:.8;box-shadow:0 0 0 4px transparent}}
+  .action-text{font-size:12.5px;color:var(--white-dim);line-height:1.4;margin-bottom:4px;}
+  .action-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .action-resp{font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:1px 7px;border-radius:3px;font-weight:500;}
+  .action-resp.agencia{background:rgba(0,194,224,0.1);color:var(--cyan);}
+  .action-resp.cliente{background:rgba(255,201,71,0.1);color:var(--yellow);}
+  .action-resp.compartido{background:rgba(0,212,138,0.1);color:var(--green);}
+  .action-date{font-size:10px;color:var(--white-muted);font-family:'DM Mono',monospace;}
+  .status-chip{font-size:10px;padding:1px 7px;border-radius:3px;}
+  .status-chip.en-progreso{background:var(--cyan-dim);color:var(--cyan);}
+  .status-chip.pendiente{background:var(--yellow-dim);color:var(--yellow);}
+  .add-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;background:transparent;border:1px dashed var(--navy-border);border-radius:6px;color:var(--white-muted);font-size:11px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;letter-spacing:1px;text-transform:uppercase;width:100%;justify-content:center;margin-top:4px;}
+  .add-btn:hover{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim);}
+  .health-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:32px;}
+  .health-card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:12px;padding:18px;display:flex;align-items:center;gap:14px;}
+  .health-indicator{width:14px;height:14px;border-radius:50%;flex-shrink:0;}
+  .health-indicator.green{background:var(--green);box-shadow:0 0 8px var(--green);}
+  .health-indicator.yellow{background:var(--yellow);box-shadow:0 0 8px var(--yellow);}
+  .health-label{font-size:11px;color:var(--white-muted);text-transform:uppercase;letter-spacing:1px;}
+  .health-val{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--white);margin-top:2px;}
+  .phases-card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:12px;padding:20px;margin-bottom:32px;}
+  .phases-track{display:flex;align-items:center;margin-top:16px;}
+  .phase-node{display:flex;flex-direction:column;align-items:center;flex:1;position:relative;}
+  .phase-node::after{content:'';position:absolute;top:14px;left:50%;width:100%;height:2px;background:var(--navy-border);z-index:0;}
+  .phase-node:last-child::after{display:none;}
+  .phase-node.active::after{background:linear-gradient(90deg,var(--cyan),var(--navy-border));}
+  .phase-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--navy-border);background:var(--navy);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;position:relative;z-index:1;color:var(--white-muted);}
+  .phase-node.done .phase-dot{background:var(--green);border-color:var(--green);color:#fff;}
+  .phase-node.active .phase-dot{background:var(--cyan);border-color:var(--cyan);color:#fff;box-shadow:0 0 12px var(--cyan-glow);}
+  .phase-label{font-size:10px;text-align:center;color:var(--white-muted);margin-top:8px;letter-spacing:1px;text-transform:uppercase;line-height:1.3;}
+  .phase-node.done .phase-label{color:var(--green);}
+  .phase-node.active .phase-label{color:var(--cyan);}
+  .notes-card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:12px;padding:20px;margin-bottom:24px;}
+  .notes-textarea{width:100%;background:var(--navy);border:1px solid var(--navy-border);border-radius:8px;padding:12px;color:var(--white-dim);font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.6;outline:none;resize:vertical;min-height:80px;transition:border-color .2s;}
+  .notes-textarea:focus{border-color:var(--cyan);color:var(--white);}
+  .priorities-card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:12px;padding:20px;margin-bottom:32px;border-left:3px solid var(--cyan);}
+  .priorities-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;color:var(--cyan);margin-bottom:14px;}
+  .priority-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(30,45,69,0.5);}
+  .priority-item:last-child{border-bottom:none;}
+  .priority-num{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--cyan);opacity:.3;width:28px;flex-shrink:0;}
+  .priority-text{font-size:13px;color:var(--white-dim);line-height:1.4;}
+  .priority-tag{margin-left:auto;font-size:10px;padding:2px 8px;border-radius:4px;flex-shrink:0;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(10,14,26,0.85);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:24px;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:14px;padding:28px;width:100%;max-width:460px;animation:slide-up .25s ease;}
+  @keyframes slide-up{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .modal-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--cyan);margin-bottom:20px;}
+  .form-group{margin-bottom:14px;}
+  .form-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--white-muted);margin-bottom:6px;display:block;}
+  .form-input,.form-select{width:100%;background:var(--navy);border:1px solid var(--navy-border);border-radius:6px;padding:9px 12px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+  .form-input:focus,.form-select:focus{border-color:var(--cyan);}
+  .form-select option{background:var(--navy-card);}
+  .modal-actions{display:flex;gap:10px;margin-top:20px;}
+  .btn-primary{flex:1;padding:10px;background:var(--cyan);border:none;border-radius:6px;color:var(--navy);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;cursor:pointer;transition:opacity .2s;}
+  .btn-primary:hover{opacity:.85;}
+  .btn-cancel{padding:10px 18px;background:transparent;border:1px solid var(--navy-border);border-radius:6px;color:var(--white-muted);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;}
+  .spinner{width:28px;height:28px;border:3px solid var(--navy-border);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  footer{border-top:1px solid var(--navy-border);padding:20px 0;margin-top:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .footer-left{font-size:11px;color:var(--white-muted);font-family:'DM Mono',monospace;letter-spacing:1px;}
+  .footer-right{font-size:11px;color:var(--white-muted);}
+  .footer-right strong{color:var(--cyan);}
+  @media(max-width:720px){.funnel-row,.actions-grid{grid-template-columns:1fr}.kpi-grid{grid-template-columns:repeat(2,1fr)}.health-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title">NUEVA ACCIÓN</div>
+    <div class="form-group"><label class="form-label">Descripción</label><input type="text" class="form-input" id="newActionText" placeholder="Ej: Optimizar campañas Meta..."></div>
+    <div class="form-group"><label class="form-label">Responsable</label>
+      <select class="form-select" id="newActionResp"><option value="agencia">Agencia</option><option value="cliente">Cliente</option><option value="compartido">Compartido</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">Fecha</label><input type="date" class="form-input" id="newActionDate"></div>
+    <div class="form-group"><label class="form-label">Estado</label>
+      <select class="form-select" id="newActionStatus"><option value="pendiente">Pendiente</option><option value="en-progreso">En Progreso</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-primary" onclick="addAction()">AGREGAR</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <header>
+    <div class="header-inner">
+      <div class="header-left">
+        <div class="logo-box"><span>DOCK NEA</span></div>
+        <div class="divider-v"></div>
+        <div class="agency-tag">
+          <div class="label">Gestionado por</div>
+          <div class="name">Command 360</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="period-badge" id="currentDate">MAR 2026</div>
+        <div class="sync-badge" id="syncBtn" onclick="loadSheetData()">↻ Actualizar datos</div>
+        <div style="font-size:10px;color:var(--white-muted);font-family:'DM Mono',monospace;" id="lastSync"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('metricas',this)">📊 Métricas</div>
+    <div class="tab" onclick="switchTab('acciones',this)">⚡ Acciones</div>
+    <div class="tab" onclick="switchTab('estado',this)">🎯 Estado</div>
+    <div class="tab" onclick="switchTab('notas',this)">📝 Notas</div>
+  </div>
+
+  <!-- MÉTRICAS -->
+  <div class="tab-content active" id="tab-metricas">
+    <div class="week-selector">
+      <div class="week-btn active" onclick="selectWeek(0,this)">SEM 1 · 01–07</div>
+      <div class="week-btn" onclick="selectWeek(1,this)">SEM 2 · 08–14</div>
+      <div class="week-btn" onclick="selectWeek(2,this)">SEM 3 · 15–21</div>
+      <div class="week-btn" onclick="selectWeek(3,this)">SEM 4 · 22–31</div>
+    </div>
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">MÉTRICAS CLAVE — <span id="weekLabel">SEMANA 1</span></span>
+      <div class="section-line"></div>
+    </div>
+    <div class="kpi-grid" id="kpiGrid"><div style="grid-column:1/-1;text-align:center;padding:40px"><div class="spinner"></div><div style="margin-top:12px;font-family:DM Mono,monospace;font-size:11px;color:var(--white-muted);letter-spacing:2px">CARGANDO DATOS...</div></div></div>
+
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">SEGUIMIENTO MENSUAL — MARZO 2026</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-header">
+        <span class="table-title">RESUMEN SEMANAL</span>
+        <span style="font-size:11px;color:var(--green);font-family:'DM Mono',monospace;">● DATOS EN VIVO · GOOGLE SHEETS</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th>Semana</th><th>Inv. Ideal</th><th>Inv. Real</th>
+            <th>Leads</th><th>Calific.</th><th>Bad</th><th>Ventas</th>
+            <th>CPL Real</th><th>Scoring</th><th>Estado</th>
+          </tr></thead>
+          <tbody id="weeklyTable"><tr><td colspan="10" style="text-align:center;padding:24px;color:var(--white-muted)"><div class="spinner" style="margin:0 auto"></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">FUNNEL DE CONVERSIÓN</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="funnel-row">
+      <div class="funnel-card">
+        <div class="funnel-title" id="funnelTitle">SEMANA 1</div>
+        <div id="funnelSteps"><div class="spinner"></div></div>
+      </div>
+      <div class="funnel-card">
+        <div class="funnel-title">ANÁLISIS RÁPIDO</div>
+        <div id="analysisBox"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCIONES -->
+  <div class="tab-content" id="tab-acciones">
+    <div class="section-header"><span class="section-num">04</span><span class="section-title">PRIORIDADES DE LA SEMANA</span><div class="section-line"></div></div>
+    <div class="priorities-card">
+      <div class="priorities-title">⚡ FOCO ESTA SEMANA</div>
+      <div class="priority-item"><div class="priority-num">01</div><div class="priority-text">Seguimiento comercial activo de leads calificados</div><span class="priority-tag tag ok">Urgente</span></div>
+      <div class="priority-item"><div class="priority-num">02</div><div class="priority-text">Medir show rate y tasa de conversión lead → propuesta</div><span class="priority-tag tag warn">Esta semana</span></div>
+      <div class="priority-item"><div class="priority-num">03</div><div class="priority-text">Optimizar inversión semana siguiente según CPL obtenido</div><span class="priority-tag tag warn">Agencia</span></div>
+    </div>
+    <div class="section-header"><span class="section-num">05</span><span class="section-title">ACCIONES Y SEGUIMIENTO</span><div class="section-line"></div></div>
+    <div class="actions-grid">
+      <div class="actions-card">
+        <div class="actions-card-header"><span class="actions-card-title pending">PRÓXIMAS ACCIONES</span><span class="count-badge pending" id="pendingCount">4</span></div>
+        <div id="pendingList">
+          <div class="action-item"><div class="action-dot in-progress"></div><div><div class="action-text">Optimizar creatividades para reducir % bad leads</div><div class="action-meta"><span class="action-resp agencia">Agencia</span><span class="action-date">18 Mar</span><span class="status-chip en-progreso">En progreso</span></div></div></div>
+          <div class="action-item"><div class="action-dot pending"></div><div><div class="action-text">Seguimiento activo leads calificados (40 contactos sem 1)</div><div class="action-meta"><span class="action-resp cliente">Cliente</span><span class="action-date">17 Mar</span><span class="status-chip pendiente">Pendiente</span></div></div></div>
+          <div class="action-item"><div class="action-dot pending"></div><div><div class="action-text">Ajustar presupuesto diario para semana siguiente</div><div class="action-meta"><span class="action-resp agencia">Agencia</span><span class="action-date">19 Mar</span><span class="status-chip pendiente">Pendiente</span></div></div></div>
+          <div class="action-item"><div class="action-dot in-progress"></div><div><div class="action-text">Grabar contenido orgánico para audiencia fría</div><div class="action-meta"><span class="action-resp compartido">Compartido</span><span class="action-date">20 Mar</span><span class="status-chip en-progreso">En progreso</span></div></div></div>
+        </div>
+        <button class="add-btn" onclick="openModal()">+ Agregar acción</button>
+      </div>
+      <div class="actions-card">
+        <div class="actions-card-header"><span class="actions-card-title done">COMPLETADAS</span><span class="count-badge done" id="doneCount">4</span></div>
+        <div id="doneList">
+          <div class="action-item"><div class="action-dot done"></div><div><div class="action-text">Lanzamiento campañas Meta semana 1</div><div class="action-meta"><span class="action-resp agencia">Agencia</span><span class="action-date">01 Mar</span></div></div></div>
+          <div class="action-item"><div class="action-dot done"></div><div><div class="action-text">Setup Apps Script — sync automático diario Meta → Sheets</div><div class="action-meta"><span class="action-resp agencia">Agencia</span><span class="action-date">19 Mar</span></div></div></div>
+          <div class="action-item"><div class="action-dot done"></div><div><div class="action-text">Configuración CRM + formularios Meta</div><div class="action-meta"><span class="action-resp agencia">Agencia</span><span class="action-date">01 Mar</span></div></div></div>
+          <div class="action-item"><div class="action-dot done"></div><div><div class="action-text">Dashboard en vivo conectado al Sheet</div><div class="action-meta"><span class="action-resp agencia">Agencia</span><span class="action-date">19 Mar</span></div></div></div>
+        </div>
+        <button class="add-btn" onclick="openModal('done')">+ Marcar como resuelta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ESTADO -->
+  <div class="tab-content" id="tab-estado">
+    <div class="section-header"><span class="section-num">06</span><span class="section-title">SEMÁFORO DE CUENTA</span><div class="section-line"></div></div>
+    <div class="health-row">
+      <div class="health-card"><div class="health-indicator green"></div><div><div class="health-label">Campañas</div><div class="health-val">ACTIVAS</div></div></div>
+      <div class="health-card"><div class="health-indicator yellow"></div><div><div class="health-label">Ventas / Cierre</div><div class="health-val">EN GESTIÓN</div></div></div>
+      <div class="health-card"><div class="health-indicator green"></div><div><div class="health-label">Calidad Leads</div><div class="health-val" id="healthScoring">CARGANDO...</div></div></div>
+    </div>
+    <div class="section-header"><span class="section-num">07</span><span class="section-title">FASE DEL SISTEMA — 90 DÍAS</span><div class="section-line"></div></div>
+    <div class="phases-card">
+      <div style="font-size:12px;color:var(--white-muted)">Dock NEA · Inicio: 01 Mar 2026 · Cierre estimado: 31 May 2026</div>
+      <div class="phases-track">
+        <div class="phase-node done"><div class="phase-dot">✓</div><div class="phase-label">Fase 1<br>Setup</div></div>
+        <div class="phase-node active"><div class="phase-dot">2</div><div class="phase-label">Fase 2<br>Activación</div></div>
+        <div class="phase-node"><div class="phase-dot">3</div><div class="phase-label">Fase 3<br>Optimización</div></div>
+        <div class="phase-node"><div class="phase-dot">4</div><div class="phase-label">Fase 4<br>Escala</div></div>
+      </div>
+      <div style="margin-top:20px;padding:14px;background:var(--cyan-dim);border-radius:8px;border-left:3px solid var(--cyan)">
+        <div style="font-size:11px;letter-spacing:1px;color:var(--cyan);text-transform:uppercase;margin-bottom:4px">Fase actual: ACTIVACIÓN</div>
+        <div style="font-size:12px;color:var(--white-dim);line-height:1.5">Campañas activas generando leads. Foco en convertir leads calificados en ventas. Próximo hito: primer cierre y medición de CAC real.</div>
+      </div>
+    </div>
+    <div class="section-header"><span class="section-num">08</span><span class="section-title">DIAGNÓSTICO DEL MES</span><div class="section-line"></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:32px;">
+      <div style="background:var(--navy-card);border:1px solid var(--navy-border);border-radius:12px;padding:18px;">
+        <div style="font-size:11px;letter-spacing:2px;color:var(--green);text-transform:uppercase;margin-bottom:12px">✓ Lo que está funcionando</div>
+        <div id="goodList"><div class="spinner"></div></div>
+      </div>
+      <div style="background:var(--navy-card);border:1px solid var(--navy-border);border-radius:12px;padding:18px;">
+        <div style="font-size:11px;letter-spacing:2px;color:var(--yellow);text-transform:uppercase;margin-bottom:12px">⚠ Puntos a resolver</div>
+        <div id="warnList"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTAS -->
+  <div class="tab-content" id="tab-notas">
+    <div class="section-header"><span class="section-num">09</span><span class="section-title">NOTAS DE REUNIÓN</span><div class="section-line"></div></div>
+    <div class="notes-card">
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin-bottom:12px">📋 REUNIÓN SEMANAL</div>
+      <textarea class="notes-textarea" id="meetingNotes" placeholder="Puntos clave, decisiones, acuerdos..." rows="5"></textarea>
+    </div>
+    <div class="notes-card">
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--white-muted);margin-bottom:12px">💡 OBSERVACIONES Y APRENDIZAJES</div>
+      <textarea class="notes-textarea" id="learningNotes" placeholder="¿Qué aprendimos de las campañas, del cliente, del mercado?" rows="4"></textarea>
+    </div>
+    <div class="notes-card">
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--white-muted);margin-bottom:12px">🔗 COMPROMISOS DEL CLIENTE</div>
+      <textarea class="notes-textarea" id="commitmentNotes" placeholder="¿Qué se comprometió a hacer el cliente? Fechas y acciones." rows="4"></textarea>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:32px;">
+      <button class="btn-primary" style="width:auto;padding:10px 28px;font-size:14px;" onclick="saveNotes()">GUARDAR NOTAS</button>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-left">DOCK NEA EMBARCACIONES · DASHBOARD v2.0 · DATOS EN VIVO · COMMAND 360</div>
+    <div class="footer-right">Arquitecto digital: <strong>Damián Duarte</strong> · Command 360</div>
+  </footer>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vThvdOjoPPzcuGeixylqlmG2fXmK3KmpMXshZl8EgE33FETzqyf01B31HdkMobqFSq6UNw-XHqkbwGF/pub?gid=475339073&single=true&output=csv";
+
+let sheetData = [];
+let currentWeek = 0;
+
+// Columnas SEGUIMIENTO SEMANAL (0-based después del header):
+// 0:Semana 1:Fechas 2:InvIdeal 3:InvReal 4:Imp 5:Alcance 6:Clics
+// 7:Leads 8:CPL 9:CTR 10:Freq 11:Calific 12:Bad 13:Ventas
+// 14:Scoring 15:TasaCierre 16:CAC 17:Ingreso 18:ROAS
+
+function n(v) {
+  if (v === null || v === undefined || v === '') return 0;
+  return parseFloat(String(v).replace(/[$%,\s\.]/g, s => s === '.' ? '.' : '').replace(/\./g, (m, o, s) => {
+    const dots = (s.match(/\./g)||[]).length;
+    return dots > 1 ? '' : m;
+  })) || parseFloat(String(v).replace(/[^0-9\.\-]/g,'')) || 0;
+}
+
+function ars(v) { return '$' + Math.round(v).toLocaleString('es-AR'); }
+function pct(v) { return v.toFixed(1) + '%'; }
+
+// ══════════════════════════════════════════════
+// CSV PARSER
+// ══════════════════════════════════════════════
+function parseCSV(text) {
+  const rows = [];
+  const lines = text.replace(/\r/g,'').split('\n');
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const cols = []; let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === '"') { inQ = !inQ; continue; }
+      if (line[i] === ',' && !inQ) { cols.push(cur.trim()); cur = ''; continue; }
+      cur += line[i];
+    }
+    cols.push(cur.trim());
+    rows.push(cols);
+  }
+  return rows;
+}
+
+// ══════════════════════════════════════════════
+// CARGAR DATOS
+// ══════════════════════════════════════════════
+async function loadSheetData() {
+  const btn = document.getElementById('syncBtn');
+  btn.textContent = '↻ Actualizando...';
+  btn.className = 'sync-badge loading';
+
+  try {
+    const r = await fetch(SHEET_URL + '&nocache=' + Date.now());
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const text = await r.text();
+    const rows = parseCSV(text);
+    // fila 0 = header, filas 1+ = datos
+    sheetData = rows.slice(1).filter(r => r[0] && r[0].trim() !== '');
+
+    const now = new Date();
+    document.getElementById('lastSync').textContent = 'Sync ' + now.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+    btn.textContent = '✓ En vivo';
+    btn.className = 'sync-badge';
+    renderAll();
+  } catch(e) {
+    btn.textContent = '⚠ Reintentar';
+    btn.className = 'sync-badge error';
+    document.getElementById('lastSync').textContent = 'Sin conexión';
+    console.error(e);
+  }
+}
+
+function row(idx) { return sheetData[idx] || []; }
+
+// ══════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════
+function renderAll() {
+  renderKPIs();
+  renderTable();
+  renderFunnel();
+  renderDiagnosis();
+}
+
+function renderKPIs() {
+  const d = row(currentWeek);
+  if (!d.length) return;
+
+  const invReal  = n(d[3]);
+  const invIdeal = n(d[2]);
+  const leads    = n(d[7]);
+  const calific  = n(d[11]);
+  const bad      = n(d[12]);
+  const ventas   = n(d[13]);
+  const cpl      = n(d[8]);
+  const scoring  = n(d[14]);
+  const ctr      = n(d[9]);
+
+  const invDelta = invIdeal > 0 ? ((invReal - invIdeal) / invIdeal * 100) : 0;
+  const scoringVal = scoring > 0 ? Math.round(scoring) : (leads > 0 ? Math.round(calific/leads*100) : 0);
+
+  document.getElementById('healthScoring').textContent = scoringVal + '% SCORE';
+
+  document.getElementById('kpiGrid').innerHTML = `
+    <div class="kpi-card">
+      <div class="kpi-label">Inversión Real</div>
+      <div class="kpi-value cyan">${ars(invReal)}</div>
+      <div class="kpi-sub">Ideal: ${ars(invIdeal)}</div>
+      <span class="kpi-delta ${invDelta > 0 ? 'down' : 'up'}">${invDelta > 0 ? '+' : ''}${Math.abs(invDelta).toFixed(0)}% vs ideal</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Leads Totales</div>
+      <div class="kpi-value">${leads}</div>
+      <div class="kpi-sub">CTR: ${pct(ctr)}</div>
+      <span class="kpi-delta ${leads > 0 ? 'up' : 'neutral'}">${leads > 0 ? 'Activo' : 'Sin datos'}</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Leads Calificados</div>
+      <div class="kpi-value green">${calific}</div>
+      <div class="kpi-sub">De ${leads} totales</div>
+      <span class="kpi-delta up">${leads > 0 ? Math.round(calific/leads*100) + '% calid.' : '—'}</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Bad Leads</div>
+      <div class="kpi-value red">${bad}</div>
+      <div class="kpi-sub">${leads > 0 ? Math.round(bad/leads*100) + '% del total' : '—'}</div>
+      <span class="kpi-delta ${leads > 0 && bad/leads < 0.15 ? 'up' : 'down'}">${leads > 0 && bad/leads < 0.15 ? 'Bajo control' : 'Revisar'}</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Ventas Cerradas</div>
+      <div class="kpi-value ${ventas > 0 ? 'green' : 'yellow'}">${ventas}</div>
+      <div class="kpi-sub">${leads > 0 ? pct(ventas/leads*100) + ' tasa cierre' : '—'}</div>
+      <span class="kpi-delta ${ventas > 0 ? 'up' : 'neutral'}">${ventas > 0 ? 'Concretado' : 'En gestión'}</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">CPL Real</div>
+      <div class="kpi-value yellow">${cpl > 0 ? ars(cpl) : '—'}</div>
+      <div class="kpi-sub">Objetivo: ${invIdeal > 0 && leads > 0 ? ars(invIdeal/leads) : '—'}</div>
+      <span class="kpi-delta ${cpl > 0 && invIdeal > 0 && leads > 0 && cpl < invIdeal/leads ? 'up' : 'neutral'}">${cpl > 0 && invIdeal > 0 && leads > 0 && cpl < invIdeal/leads ? 'Bajo objetivo' : 'En rango'}</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Scoring Calidad</div>
+      <div class="kpi-value cyan">${scoringVal > 0 ? scoringVal + '%' : '—'}</div>
+      <div class="kpi-sub">Calidad de entrada</div>
+      <span class="kpi-delta ${scoringVal >= 80 ? 'up' : 'neutral'}">${scoringVal >= 80 ? 'Bueno' : 'Monitorear'}</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">CAC</div>
+      <div class="kpi-value">${ventas > 0 && invReal > 0 ? ars(invReal/ventas) : '—'}</div>
+      <div class="kpi-sub">Costo adquisición cliente</div>
+      <span class="kpi-delta neutral">${ventas > 0 ? 'Calculado' : 'Requiere ventas'}</span>
+    </div>
+  `;
+}
+
+function renderTable() {
+  const semNames = ['01 al 07 Mar','08 al 14 Mar','15 al 21 Mar','22 al 31 Mar'];
+  const invIdeales = [114000,228000,342000,456000];
+  let html = '';
+
+  for (let i = 0; i < 4; i++) {
+    const d = row(i);
+    const hasData = d.length > 0 && n(d[3]) > 0;
+    const invR = hasData ? n(d[3]) : 0;
+    const invI = n(d[2]) || invIdeales[i];
+    const leads = hasData ? n(d[7]) : 0;
+    const cal   = hasData ? n(d[11]) : 0;
+    const bad   = hasData ? n(d[12]) : 0;
+    const ven   = hasData ? n(d[13]) : 0;
+    const cpl   = hasData ? n(d[8]) : 0;
+    const sc    = hasData ? n(d[14]) : 0;
+    const scVal = sc > 0 ? Math.round(sc) : (leads > 0 ? Math.round(cal/leads*100) : 0);
+
+    const estado = !hasData
+      ? '<span class="tag empty">Pendiente</span>'
+      : ven > 0 ? '<span class="tag ok">Con ventas</span>'
+      : '<span class="tag ok">Activo</span>';
+
+    html += `<tr>
+      <td class="week-label">Sem ${i+1}</td>
+      <td style="color:var(--white-muted)">${ars(invI)}</td>
+      <td style="color:${hasData && invR > invI ? 'var(--yellow)' : 'var(--green)'}">${hasData ? ars(invR) : '—'}</td>
+      <td style="color:${leads > 0 ? 'var(--green)' : 'var(--white-muted)'}">${hasData ? leads : '—'}</td>
+      <td>${hasData ? cal : '—'}</td>
+      <td>${hasData ? bad : '—'}</td>
+      <td style="color:${ven > 0 ? 'var(--green)' : 'var(--white-muted)'}">${hasData ? ven : '—'}</td>
+      <td style="color:${cpl > 0 && cpl < 5000 ? 'var(--green)' : 'var(--yellow)'}">${hasData && cpl > 0 ? ars(cpl) : '—'}</td>
+      <td>${scVal > 0 ? scVal + '%' : '—'}</td>
+      <td>${estado}</td>
+    </tr>`;
+  }
+
+  // Totales
+  const tot = row(4);
+  if (tot.length && n(tot[3]) > 0) {
+    html += `<tr style="background:rgba(0,194,224,0.06)">
+      <td class="week-label" style="color:var(--white)">TOTAL</td>
+      <td style="color:var(--white-muted)">$1.140.000</td>
+      <td style="color:var(--cyan)">${ars(n(tot[3]))}</td>
+      <td style="color:var(--green)">${n(tot[7])}</td>
+      <td>${n(tot[11])}</td>
+      <td>${n(tot[12])}</td>
+      <td style="color:${n(tot[13]) > 0 ? 'var(--green)' : 'var(--white-muted)'}">${n(tot[13])}</td>
+      <td style="color:var(--green)">${n(tot[8]) > 0 ? ars(n(tot[8])) : '—'}</td>
+      <td>—</td>
+      <td><span class="tag ok">En curso</span></td>
+    </tr>`;
+  }
+
+  document.getElementById('weeklyTable').innerHTML = html;
+}
+
+function renderFunnel() {
+  const d = row(currentWeek);
+  if (!d.length) return;
+
+  const leads  = n(d[7]);
+  const cal    = n(d[11]);
+  const bad    = n(d[12]);
+  const ventas = n(d[13]);
+  const pCal   = leads > 0 ? Math.round(cal/leads*100) : 0;
+  const pBad   = leads > 0 ? Math.round(bad/leads*100) : 0;
+  const pVen   = leads > 0 ? (ventas/leads*100).toFixed(1) : 0;
+
+  document.getElementById('funnelTitle').textContent = 'SEMANA ' + (currentWeek+1);
+  document.getElementById('funnelSteps').innerHTML = `
+    <div class="funnel-step"><div class="funnel-step-label">Leads Totales</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:100%"></div></div><div class="funnel-step-val">${leads}</div><div class="funnel-step-pct">100%</div></div>
+    <div class="funnel-step"><div class="funnel-step-label">Calificados</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${pCal}%;background:var(--green)"></div></div><div class="funnel-step-val">${cal}</div><div class="funnel-step-pct">${pCal}%</div></div>
+    <div class="funnel-step"><div class="funnel-step-label">Bad Leads</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${pBad}%;background:var(--red)"></div></div><div class="funnel-step-val">${bad}</div><div class="funnel-step-pct">${pBad}%</div></div>
+    <div class="funnel-step"><div class="funnel-step-label">Ventas</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${Math.min(pVen,100)}%;background:var(--yellow)"></div></div><div class="funnel-step-val" style="color:${ventas>0?'var(--green)':'var(--white-muted)'}">${ventas}</div><div class="funnel-step-pct">${pVen}%</div></div>
+  `;
+
+  const cpl = n(d[8]);
+  const inv = n(d[3]);
+  const invI = n(d[2]);
+
+  document.getElementById('analysisBox').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="padding:12px;background:var(--green-dim);border-radius:8px;border-left:3px solid var(--green)">
+        <div style="font-size:11px;letter-spacing:1px;color:var(--green);text-transform:uppercase;margin-bottom:4px">✓ Positivo</div>
+        <div style="font-size:12px;color:var(--white-dim);line-height:1.5">CPL ${cpl > 0 ? ars(cpl) : '—'} · ${cal} leads calificados (${pCal}% scoring) · Sistema de adquisición funcionando.</div>
+      </div>
+      <div style="padding:12px;background:var(--yellow-dim);border-radius:8px;border-left:3px solid var(--yellow)">
+        <div style="font-size:11px;letter-spacing:1px;color:var(--yellow);text-transform:uppercase;margin-bottom:4px">⚠ Atención</div>
+        <div style="font-size:12px;color:var(--white-dim);line-height:1.5">${ventas === 0 ? 'Sin ventas registradas — activar seguimiento comercial.' : ventas + ' ventas confirmadas.'} ${bad > 0 ? pBad + '% bad leads — optimizable.' : ''}</div>
+      </div>
+      <div style="padding:12px;background:var(--cyan-dim);border-radius:8px;border-left:3px solid var(--cyan)">
+        <div style="font-size:11px;letter-spacing:1px;color:var(--cyan);text-transform:uppercase;margin-bottom:4px">→ Próximo paso</div>
+        <div style="font-size:12px;color:var(--white-dim);line-height:1.5">${cal > 0 ? 'Seguimiento de ' + cal + ' leads calificados. Medir show rate y tasa de cierre.' : 'Continuar generando volumen de leads calificados.'}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderDiagnosis() {
+  const tot = row(4) || row(0);
+  if (!tot.length) return;
+  const tLeads = n(tot[7]);
+  const tCal   = n(tot[11]);
+  const tCpl   = n(tot[8]);
+  const tInv   = n(tot[3]);
+
+  document.getElementById('goodList').innerHTML = `
+    <div style="font-size:12px;color:var(--white-dim);display:flex;gap:8px"><span style="color:var(--green)">→</span>CPL ${tCpl > 0 ? ars(tCpl) : '—'} — sistema de adquisición eficiente</div>
+    <div style="font-size:12px;color:var(--white-dim);display:flex;gap:8px"><span style="color:var(--green)">→</span>${tLeads} leads totales generados en el mes</div>
+    <div style="font-size:12px;color:var(--white-dim);display:flex;gap:8px"><span style="color:var(--green)">→</span>${tCal} leads calificados — audiencia bien segmentada</div>
+  `;
+  document.getElementById('warnList').innerHTML = `
+    <div style="font-size:12px;color:var(--white-dim);display:flex;gap:8px"><span style="color:var(--yellow)">→</span>Cuello de botella en proceso comercial — medir show rate</div>
+    <div style="font-size:12px;color:var(--white-dim);display:flex;gap:8px"><span style="color:var(--yellow)">→</span>Inversión ${tInv > 0 ? ars(tInv) : '—'} — verificar distribución semanal</div>
+    <div style="font-size:12px;color:var(--white-dim);display:flex;gap:8px"><span style="color:var(--yellow)">→</span>Registrar ventas para calcular CAC y ROAS real</div>
+  `;
+}
+
+// ══════════════════════════════════════════════
+// CONTROLES
+// ══════════════════════════════════════════════
+function selectWeek(idx, el) {
+  document.querySelectorAll('.week-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  currentWeek = idx;
+  document.getElementById('weekLabel').textContent = 'SEMANA ' + (idx+1);
+  renderKPIs();
+  renderFunnel();
+}
+
+function switchTab(id, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+
+let modalTarget = 'pending';
+function openModal(s='pending') { modalTarget=s; document.getElementById('newActionDate').value=new Date().toISOString().split('T')[0]; document.getElementById('modalOverlay').classList.add('open'); }
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); document.getElementById('newActionText').value=''; }
+function addAction() {
+  const text = document.getElementById('newActionText').value.trim();
+  if (!text) return;
+  const resp=document.getElementById('newActionResp').value;
+  const date=document.getElementById('newActionDate').value;
+  const status=document.getElementById('newActionStatus').value;
+  const df=date?new Date(date+'T00:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'short'}):'—';
+  const dc=modalTarget==='done'?'done':status==='en-progreso'?'in-progress':'pending';
+  const ch=modalTarget==='done'?'':`<span class="status-chip ${status}">${status==='en-progreso'?'En progreso':'Pendiente'}</span>`;
+  const item=document.createElement('div');
+  item.className='action-item';
+  item.innerHTML=`<div class="action-dot ${dc}"></div><div><div class="action-text">${text}</div><div class="action-meta"><span class="action-resp ${resp}">${resp.charAt(0).toUpperCase()+resp.slice(1)}</span><span class="action-date">${df}</span>${ch}</div></div>`;
+  document.getElementById(modalTarget==='done'?'doneList':'pendingList').appendChild(item);
+  const cId=modalTarget==='done'?'doneCount':'pendingCount';
+  document.getElementById(cId).textContent=parseInt(document.getElementById(cId).textContent)+1;
+  closeModal();
+}
+document.getElementById('modalOverlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+function saveNotes() {
+  try {
+    localStorage.setItem('dn_notes1',document.getElementById('meetingNotes').value);
+    localStorage.setItem('dn_notes2',document.getElementById('learningNotes').value);
+    localStorage.setItem('dn_notes3',document.getElementById('commitmentNotes').value);
+  } catch(e){}
+  alert('✓ Notas guardadas');
+}
+try {
+  const n1=localStorage.getItem('dn_notes1'),n2=localStorage.getItem('dn_notes2'),n3=localStorage.getItem('dn_notes3');
+  if(n1)document.getElementById('meetingNotes').value=n1;
+  if(n2)document.getElementById('learningNotes').value=n2;
+  if(n3)document.getElementById('commitmentNotes').value=n3;
+} catch(e){}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+const months=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+const now=new Date();
+document.getElementById('currentDate').textContent=months[now.getMonth()]+' '+now.getFullYear();
+loadSheetData();
+</script>
+</body>
+</html>
