@@ -85,6 +85,22 @@
   .week-btn{padding:6px 14px;border-radius:5px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;border:1px solid var(--navy-border);background:var(--navy-card);color:var(--white-muted);transition:all .2s;letter-spacing:1px;}
   .week-btn:hover{border-color:var(--cyan);color:var(--cyan);}
   .week-btn.active{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan);}
+  .month-selector{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 20px;background:rgba(0,194,224,0.04);border-bottom:1px solid var(--navy-border);}
+  .month-selector-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--white-muted);font-family:'DM Mono',monospace;margin-right:4px;}
+  .month-btn{padding:6px 16px;border-radius:5px;font-size:11px;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;cursor:pointer;border:1px solid var(--navy-border);background:var(--navy-card);color:var(--white-muted);transition:all .2s;}
+  .month-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+  .month-btn.active{background:var(--cyan);border-color:var(--cyan);color:var(--navy);font-weight:700;}
+  .month-btn.current{border-color:var(--green);color:var(--green);}
+  .month-btn.current.active{background:var(--green);border-color:var(--green);color:var(--navy);}
+  .hist-card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:12px;padding:20px;margin-bottom:32px;}
+  .hist-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px;}
+  .hist-item{background:var(--navy);border-radius:8px;padding:14px;border:1px solid var(--navy-border);}
+  .hist-item-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--white-muted);margin-bottom:8px;font-family:'DM Mono',monospace;}
+  .hist-item-val{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--white);}
+  .hist-item-val.cyan{color:var(--cyan);}
+  .hist-item-val.green{color:var(--green);}
+  .hist-item-val.yellow{color:var(--yellow);}
+  .hist-compare{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:11px;color:var(--white-muted);font-family:'DM Mono',monospace;}
   .actions-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;}
   .actions-card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:12px;overflow:hidden;}
   .actions-card-header{padding:14px 18px;border-bottom:1px solid var(--navy-border);display:flex;align-items:center;justify-content:space-between;}
@@ -143,6 +159,15 @@
   .priority-num{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--cyan);opacity:.3;width:28px;flex-shrink:0;}
   .priority-text{font-size:13px;color:var(--white-dim);line-height:1.4;}
   .priority-tag{margin-left:auto;font-size:10px;padding:2px 8px;border-radius:4px;flex-shrink:0;}
+  .ctx-menu{position:fixed;background:var(--navy-card);border:1px solid var(--navy-border);border-radius:10px;padding:6px;z-index:200;min-width:190px;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:slide-up .15s ease;}
+  .ctx-item{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:6px;font-size:12px;cursor:pointer;color:var(--white-dim);transition:background .15s;}
+  .ctx-item:hover{background:var(--cyan-dim);color:var(--white);}
+  .ctx-item.danger:hover{background:var(--red-dim);color:var(--red);}
+  .ctx-item .ctx-icon{font-size:14px;width:18px;text-align:center;}
+  .action-item{cursor:pointer;transition:background .15s;}
+  .action-item:hover{background:rgba(0,194,224,0.06);}
+  .action-dot.delayed{background:var(--red);box-shadow:0 0 6px var(--red);}
+  .status-chip.demorada{background:var(--red-dim);color:var(--red);}
   .modal-overlay{position:fixed;inset:0;background:rgba(10,14,26,0.85);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:24px;}
   .modal-overlay.open{display:flex;}
   .modal{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:14px;padding:28px;width:100%;max-width:460px;animation:slide-up .25s ease;}
@@ -205,6 +230,15 @@
     </div>
   </header>
 
+  <!-- SELECTOR DE MES -->
+  <div class="month-selector">
+    <span class="month-selector-label">Período:</span>
+    <div class="month-btn" onclick="selectMes(0,this)" id="mesBtn0">ENE 2026</div>
+    <div class="month-btn" onclick="selectMes(1,this)" id="mesBtn1">FEB 2026</div>
+    <div class="month-btn current active" onclick="selectMes(2,this)" id="mesBtn2">MAR 2026 ●</div>
+    <span style="margin-left:auto;font-size:10px;color:var(--white-muted);font-family:'DM Mono',monospace;">● mes actual</span>
+  </div>
+
   <div class="tabs">
     <div class="tab active" onclick="switchTab('metricas',this)">📊 Métricas</div>
     <div class="tab" onclick="switchTab('acciones',this)">⚡ Acciones</div>
@@ -214,19 +248,26 @@
 
   <!-- MÉTRICAS -->
   <div class="tab-content active" id="tab-metricas">
-    <div class="week-selector">
-      <div class="week-btn active" onclick="selectWeek(0,this)">SEM 1 · 01–07</div>
-      <div class="week-btn" onclick="selectWeek(1,this)">SEM 2 · 08–14</div>
-      <div class="week-btn" onclick="selectWeek(2,this)">SEM 3 · 15–21</div>
-      <div class="week-btn" onclick="selectWeek(3,this)">SEM 4 · 22–31</div>
+    <div id="weekSelectorSection">
+      <div class="week-selector">
+        <div class="week-btn active" onclick="selectWeek(0,this)">SEM 1 · 01–07</div>
+        <div class="week-btn" onclick="selectWeek(1,this)">SEM 2 · 08–14</div>
+        <div class="week-btn" onclick="selectWeek(2,this)">SEM 3 · 15–21</div>
+        <div class="week-btn" onclick="selectWeek(3,this)">SEM 4 · 22–31</div>
+      </div>
+    </div>
+    <div id="histMesSection" style="display:none;margin-bottom:20px;padding:12px 16px;background:var(--cyan-dim);border-radius:8px;border-left:3px solid var(--cyan)">
+      <span style="font-size:11px;color:var(--cyan);font-family:'DM Mono',monospace;letter-spacing:1px">VER MES COMPLETO · Datos acumulados del mes seleccionado</span>
     </div>
     <div class="section-header">
       <span class="section-num">01</span>
-      <span class="section-title">MÉTRICAS CLAVE — <span id="weekLabel">SEMANA 1</span></span>
+      <span class="section-title" id="metricsTitle">MÉTRICAS CLAVE — SEMANA 1</span>
+      <span id="weekLabel" style="display:none">SEMANA 1</span>
       <div class="section-line"></div>
     </div>
     <div class="kpi-grid" id="kpiGrid"><div style="grid-column:1/-1;text-align:center;padding:40px"><div class="spinner"></div><div style="margin-top:12px;font-family:DM Mono,monospace;font-size:11px;color:var(--white-muted);letter-spacing:2px">CARGANDO DATOS...</div></div></div>
 
+    <div id="semanalSection">
     <div class="section-header">
       <span class="section-num">02</span>
       <span class="section-title">SEGUIMIENTO MENSUAL — MARZO 2026</span>
@@ -248,6 +289,7 @@
         </table>
       </div>
     </div>
+    </div><!-- end semanalSection -->
 
     <div class="section-header">
       <span class="section-num">03</span>
@@ -264,6 +306,20 @@
         <div id="analysisBox"><div class="spinner"></div></div>
       </div>
     </div>
+
+    <!-- COMPARATIVO HISTÓRICO -->
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">COMPARATIVO HISTÓRICO — TODOS LOS MESES</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="hist-card">
+      <div style="font-size:11px;color:var(--white-muted);margin-bottom:4px">Evolución de métricas clave desde el inicio de las campañas · Enero → Marzo 2026</div>
+      <div class="hist-grid" id="histGrid">
+        <div style="grid-column:1/-1;text-align:center;padding:20px"><div class="spinner" style="margin:0 auto"></div></div>
+      </div>
+    </div>
+
   </div>
 
   <!-- ACCIONES -->
@@ -276,26 +332,18 @@
       <div class="priority-item"><div class="priority-num">03</div><div class="priority-text">Optimizar inversión semana siguiente según CPL obtenido</div><span class="priority-tag tag warn">Agencia</span></div>
     </div>
     <div class="section-header"><span class="section-num">05</span><span class="section-title">ACCIONES Y SEGUIMIENTO</span><div class="section-line"></div></div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <button class="add-btn" style="width:auto;flex:1;min-width:180px" onclick="openModal('pending')">+ Nueva acción</button>
+      <div style="font-size:11px;color:var(--white-muted);font-family:'DM Mono',monospace;display:flex;align-items:center;padding:0 8px">Click derecho en cualquier acción para cambiar estado</div>
+    </div>
     <div class="actions-grid">
       <div class="actions-card">
-        <div class="actions-card-header"><span class="actions-card-title pending">PRÓXIMAS ACCIONES</span><span class="count-badge pending" id="pendingCount">4</span></div>
-        <div id="pendingList">
-          <div class="action-item"><div class="action-dot in-progress"></div><div><div class="action-text">Optimizar creatividades para reducir % bad leads</div><div class="action-meta"><span class="action-resp agencia">Agencia</span><span class="action-date">18 Mar</span><span class="status-chip en-progreso">En progreso</span></div></div></div>
-          <div class="action-item"><div class="action-dot pending"></div><div><div class="action-text">Seguimiento activo leads calificados (40 contactos sem 1)</div><div class="action-meta"><span class="action-resp cliente">Cliente</span><span class="action-date">17 Mar</span><span class="status-chip pendiente">Pendiente</span></div></div></div>
-          <div class="action-item"><div class="action-dot pending"></div><div><div class="action-text">Ajustar presupuesto diario para semana siguiente</div><div class="action-meta"><span class="action-resp agencia">Agencia</span><span class="action-date">19 Mar</span><span class="status-chip pendiente">Pendiente</span></div></div></div>
-          <div class="action-item"><div class="action-dot in-progress"></div><div><div class="action-text">Grabar contenido orgánico para audiencia fría</div><div class="action-meta"><span class="action-resp compartido">Compartido</span><span class="action-date">20 Mar</span><span class="status-chip en-progreso">En progreso</span></div></div></div>
-        </div>
-        <button class="add-btn" onclick="openModal()">+ Agregar acción</button>
+        <div class="actions-card-header"><span class="actions-card-title pending">PRÓXIMAS ACCIONES</span><span class="count-badge pending" id="pendingCount">0</span></div>
+        <div id="pendingList"></div>
       </div>
       <div class="actions-card">
-        <div class="actions-card-header"><span class="actions-card-title done">COMPLETADAS</span><span class="count-badge done" id="doneCount">4</span></div>
-        <div id="doneList">
-          <div class="action-item"><div class="action-dot done"></div><div><div class="action-text">Lanzamiento campañas Meta semana 1</div><div class="action-meta"><span class="action-resp agencia">Agencia</span><span class="action-date">01 Mar</span></div></div></div>
-          <div class="action-item"><div class="action-dot done"></div><div><div class="action-text">Setup Apps Script — sync automático diario Meta → Sheets</div><div class="action-meta"><span class="action-resp agencia">Agencia</span><span class="action-date">19 Mar</span></div></div></div>
-          <div class="action-item"><div class="action-dot done"></div><div><div class="action-text">Configuración CRM + formularios Meta</div><div class="action-meta"><span class="action-resp agencia">Agencia</span><span class="action-date">01 Mar</span></div></div></div>
-          <div class="action-item"><div class="action-dot done"></div><div><div class="action-text">Dashboard en vivo conectado al Sheet</div><div class="action-meta"><span class="action-resp agencia">Agencia</span><span class="action-date">19 Mar</span></div></div></div>
-        </div>
-        <button class="add-btn" onclick="openModal('done')">+ Marcar como resuelta</button>
+        <div class="actions-card-header"><span class="actions-card-title done">COMPLETADAS</span><span class="count-badge done" id="doneCount">0</span></div>
+        <div id="doneList"></div>
       </div>
     </div>
   </div>
@@ -366,9 +414,12 @@
 // CONFIG
 // ══════════════════════════════════════════════
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vThvdOjoPPzcuGeixylqlmG2fXmK3KmpMXshZl8EgE33FETzqyf01B31HdkMobqFSq6UNw-XHqkbwGF/pub?gid=475339073&single=true&output=csv";
+const HISTORIAL_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vThvdOjoPPzcuGeixylqlmG2fXmK3KmpMXshZl8EgE33FETzqyf01B31HdkMobqFSq6UNw-XHqkbwGF/pub?gid=1500152970&single=true&output=csv";
 
 let sheetData = [];
+let historialData = [];
 let currentWeek = 0;
+let currentMes = 2; // 0=Enero, 1=Febrero, 2=Marzo (mes actual por defecto)
 
 // Columnas SEGUIMIENTO SEMANAL (0-based después del header):
 // 0:Semana 1:Fechas 2:InvIdeal 3:InvReal 4:Imp 5:Alcance 6:Clics
@@ -377,10 +428,19 @@ let currentWeek = 0;
 
 function n(v) {
   if (v === null || v === undefined || v === '') return 0;
-  return parseFloat(String(v).replace(/[$%,\s\.]/g, s => s === '.' ? '.' : '').replace(/\./g, (m, o, s) => {
-    const dots = (s.match(/\./g)||[]).length;
-    return dots > 1 ? '' : m;
-  })) || parseFloat(String(v).replace(/[^0-9\.\-]/g,'')) || 0;
+  let s = String(v).trim().replace(/[$\s%]/g, '');
+  if (!s || s === '-') return 0;
+  if (s.indexOf(',') > -1) {
+    s = s.replace(/\./g, '').replace(',', '.');
+  } else {
+    const dots = (s.match(/\./g) || []).length;
+    if (dots > 1) { s = s.replace(/\./g, ''); }
+    else if (dots === 1) {
+      const parts = s.split('.');
+      if (parts[1] && parts[1].length === 3) s = s.replace('.', '');
+    }
+  }
+  return parseFloat(s) || 0;
 }
 
 function ars(v) { return '$' + Math.round(v).toLocaleString('es-AR'); }
@@ -415,12 +475,20 @@ async function loadSheetData() {
   btn.className = 'sync-badge loading';
 
   try {
+    // Cargar hoja semanal (mes actual)
     const r = await fetch(SHEET_URL + '&nocache=' + Date.now());
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const text = await r.text();
     const rows = parseCSV(text);
-    // fila 0 = header, filas 1+ = datos
     sheetData = rows.slice(1).filter(r => r[0] && r[0].trim() !== '');
+
+    // Cargar historial
+    const r2 = await fetch(HISTORIAL_URL + '&nocache=' + Date.now());
+    if (r2.ok) {
+      const text2 = await r2.text();
+      const rows2 = parseCSV(text2);
+      historialData = rows2.slice(1).filter(r => r[0] && r[0].trim() !== '');
+    }
 
     const now = new Date();
     document.getElementById('lastSync').textContent = 'Sync ' + now.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
@@ -441,10 +509,16 @@ function row(idx) { return sheetData[idx] || []; }
 // RENDER
 // ══════════════════════════════════════════════
 function renderAll() {
-  renderKPIs();
-  renderTable();
-  renderFunnel();
+  if (currentMes === 2) {
+    renderKPIs();
+    renderTable();
+    renderFunnel();
+  } else {
+    renderKPIsHistorial(currentMes);
+    renderFunnelHistorial(currentMes);
+  }
   renderDiagnosis();
+  renderHistorial();
 }
 
 function renderKPIs() {
@@ -640,6 +714,199 @@ function renderDiagnosis() {
 // ══════════════════════════════════════════════
 // CONTROLES
 // ══════════════════════════════════════════════
+function selectMes(idx, el) {
+  document.querySelectorAll('.month-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  currentMes = idx;
+
+  const mesNames = ['ENERO 2026','FEBRERO 2026','MARZO 2026'];
+  // Si es marzo (mes actual) mostramos la vista semanal normal
+  // Si es enero o febrero mostramos vista mensual del historial
+  const esMesActual = idx === 2;
+
+  document.getElementById('weekSelectorSection').style.display = esMesActual ? 'block' : 'none';
+  document.getElementById('semanalSection').style.display = esMesActual ? 'block' : 'none';
+  document.getElementById('histMesSection').style.display = esMesActual ? 'none' : 'block';
+
+  document.getElementById('metricsTitle').textContent = 'MÉTRICAS CLAVE — ' + mesNames[idx];
+
+  if (esMesActual) {
+    currentWeek = 0;
+    document.querySelectorAll('.week-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+    document.getElementById('weekLabel').textContent = 'SEMANA 1';
+    renderKPIs();
+    renderFunnel();
+  } else {
+    renderKPIsHistorial(idx);
+    renderFunnelHistorial(idx);
+  }
+  renderHistorial();
+}
+
+function getHistRow(mesIdx) {
+  // historialData: col 0=mes(num), col 3=inv, col 7=leads, col 8=cpl, col 11=calific, col 12=bad, col 13=ventas
+  return historialData.find(r => parseInt(r[0]) === mesIdx) || [];
+}
+
+function renderKPIsHistorial(mesIdx) {
+  const d = getHistRow(mesIdx);
+  if (!d.length) return;
+
+  // Historial cols: 0:mes 1:año 2:label 3:inv 4:imp 5:alc 6:clics 7:leads 8:cpl 9:ctr 10:freq 11:calific 12:bad 13:ventas 14:scoring
+  const inv    = n(d[3]);
+  const leads  = n(d[7]);
+  const calific = n(d[11]);
+  const bad    = n(d[12]);
+  const ventas = n(d[13]);
+  const cpl    = n(d[8]);
+  const ctr    = n(d[9]);
+  const scoring = n(d[14]);
+  const scoringVal = scoring > 0 ? Math.round(scoring) : (leads > 0 ? Math.round(calific/leads*100) : 0);
+
+  document.getElementById('healthScoring').textContent = scoringVal + '% SCORE';
+
+  document.getElementById('kpiGrid').innerHTML = `
+    <div class="kpi-card">
+      <div class="kpi-label">Inversión Total</div>
+      <div class="kpi-value cyan">${ars(inv)}</div>
+      <div class="kpi-sub">Mes completo</div>
+      <span class="kpi-delta neutral">Histórico</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Leads Totales</div>
+      <div class="kpi-value">${leads}</div>
+      <div class="kpi-sub">CTR: ${pct(ctr)}</div>
+      <span class="kpi-delta up">Mes completo</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Leads Calificados</div>
+      <div class="kpi-value green">${calific > 0 ? calific : '—'}</div>
+      <div class="kpi-sub">De ${leads} totales</div>
+      <span class="kpi-delta up">${leads > 0 && calific > 0 ? Math.round(calific/leads*100) + '% calid.' : '—'}</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Bad Leads</div>
+      <div class="kpi-value red">${bad > 0 ? bad : '—'}</div>
+      <div class="kpi-sub">${leads > 0 && bad > 0 ? Math.round(bad/leads*100) + '% del total' : '—'}</div>
+      <span class="kpi-delta neutral">Mes completo</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Ventas Cerradas</div>
+      <div class="kpi-value ${ventas > 0 ? 'green' : 'yellow'}">${ventas > 0 ? ventas : '—'}</div>
+      <div class="kpi-sub">${leads > 0 && ventas > 0 ? pct(ventas/leads*100) + ' tasa cierre' : '—'}</div>
+      <span class="kpi-delta ${ventas > 0 ? 'up' : 'neutral'}">${ventas > 0 ? 'Confirmadas' : 'Sin datos'}</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">CPL Real</div>
+      <div class="kpi-value yellow">${cpl > 0 ? ars(cpl) : '—'}</div>
+      <div class="kpi-sub">Costo por lead</div>
+      <span class="kpi-delta up">Mes completo</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Scoring Calidad</div>
+      <div class="kpi-value cyan">${scoringVal > 0 ? scoringVal + '%' : '—'}</div>
+      <div class="kpi-sub">Calidad de entrada</div>
+      <span class="kpi-delta ${scoringVal >= 80 ? 'up' : 'neutral'}">${scoringVal >= 80 ? 'Bueno' : '—'}</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">CAC</div>
+      <div class="kpi-value">${ventas > 0 && inv > 0 ? ars(inv/ventas) : '—'}</div>
+      <div class="kpi-sub">Costo adquisición cliente</div>
+      <span class="kpi-delta neutral">${ventas > 0 ? 'Calculado' : 'Sin ventas'}</span>
+    </div>
+  `;
+}
+
+function renderFunnelHistorial(mesIdx) {
+  const d = getHistRow(mesIdx);
+  if (!d.length) return;
+
+  const leads   = n(d[7]);
+  const calific = n(d[11]);
+  const bad     = n(d[12]);
+  const ventas  = n(d[13]);
+  const mesNames = ['ENERO 2026','FEBRERO 2026','MARZO 2026'];
+
+  const pCal = leads > 0 ? Math.round(calific/leads*100) : 0;
+  const pBad = leads > 0 ? Math.round(bad/leads*100) : 0;
+  const pVen = leads > 0 ? (ventas/leads*100).toFixed(1) : 0;
+
+  document.getElementById('funnelTitle').textContent = mesNames[mesIdx];
+  document.getElementById('funnelSteps').innerHTML = `
+    <div class="funnel-step"><div class="funnel-step-label">Leads Totales</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:100%"></div></div><div class="funnel-step-val">${leads}</div><div class="funnel-step-pct">100%</div></div>
+    <div class="funnel-step"><div class="funnel-step-label">Calificados</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${pCal}%;background:var(--green)"></div></div><div class="funnel-step-val">${calific > 0 ? calific : '—'}</div><div class="funnel-step-pct">${pCal > 0 ? pCal+'%' : '—'}</div></div>
+    <div class="funnel-step"><div class="funnel-step-label">Bad Leads</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${pBad}%;background:var(--red)"></div></div><div class="funnel-step-val">${bad > 0 ? bad : '—'}</div><div class="funnel-step-pct">${pBad > 0 ? pBad+'%' : '—'}</div></div>
+    <div class="funnel-step"><div class="funnel-step-label">Ventas</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${Math.min(pVen,100)}%;background:var(--yellow)"></div></div><div class="funnel-step-val" style="color:${ventas>0?'var(--green)':'var(--white-muted)'}">${ventas > 0 ? ventas : '—'}</div><div class="funnel-step-pct">${pVen > 0 ? pVen+'%' : '—'}</div></div>
+  `;
+
+  const cpl = n(d[8]);
+  document.getElementById('analysisBox').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="padding:12px;background:var(--green-dim);border-radius:8px;border-left:3px solid var(--green)">
+        <div style="font-size:11px;letter-spacing:1px;color:var(--green);text-transform:uppercase;margin-bottom:4px">✓ Resultado del mes</div>
+        <div style="font-size:12px;color:var(--white-dim);line-height:1.5">${leads} leads generados · CPL ${cpl > 0 ? ars(cpl) : '—'} · ${calific > 0 ? calific + ' calificados' : 'Sin datos de calificación'}</div>
+      </div>
+      <div style="padding:12px;background:var(--cyan-dim);border-radius:8px;border-left:3px solid var(--cyan)">
+        <div style="font-size:11px;letter-spacing:1px;color:var(--cyan);text-transform:uppercase;margin-bottom:4px">→ Comparar con marzo</div>
+        <div style="font-size:12px;color:var(--white-dim);line-height:1.5">Hacé click en MAR 2026 para ver el mes actual y comparar la evolución.</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderHistorial() {
+  if (!historialData.length) return;
+  const mesNames = ['Enero','Febrero','Marzo'];
+  const colors = ['var(--white-muted)','var(--cyan)','var(--green)'];
+
+  // Comparativa de los 3 meses
+  let invHtml = '', leadsHtml = '', cplHtml = '';
+  let maxInv = 0, maxLeads = 0;
+
+  historialData.forEach(function(d) {
+    const inv = n(d[3]);
+    const leads = n(d[7]);
+    if (inv > maxInv) maxInv = inv;
+    if (leads > maxLeads) maxLeads = leads;
+  });
+
+  const rows = historialData.slice(0,3);
+  const gridHtml = rows.map(function(d, i) {
+    const inv    = n(d[3]);
+    const leads  = n(d[7]);
+    const cpl    = n(d[8]);
+    const calific = n(d[11]);
+    const label  = d[2] || mesNames[i];
+    const pInv   = maxInv > 0 ? Math.round(inv/maxInv*100) : 0;
+    const pLeads = maxLeads > 0 ? Math.round(leads/maxLeads*100) : 0;
+    const isCurrent = i === 2;
+
+    return `
+      <div class="hist-item" style="${isCurrent ? 'border-color:var(--green);' : ''}">
+        <div class="hist-item-label">${label.toUpperCase()}${isCurrent ? ' ●' : ''}</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+          <div>
+            <div style="font-size:10px;color:var(--white-muted);margin-bottom:3px">INVERSIÓN</div>
+            <div class="hist-item-val cyan" style="font-size:20px">${ars(inv)}</div>
+            <div style="height:4px;background:var(--navy-border);border-radius:2px;margin-top:4px"><div style="height:4px;width:${pInv}%;background:var(--cyan);border-radius:2px"></div></div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--white-muted);margin-bottom:3px">LEADS</div>
+            <div class="hist-item-val green" style="font-size:20px">${leads}</div>
+            <div style="height:4px;background:var(--navy-border);border-radius:2px;margin-top:4px"><div style="height:4px;width:${pLeads}%;background:var(--green);border-radius:2px"></div></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px">
+            <div><div style="font-size:10px;color:var(--white-muted)">CPL</div><div style="font-size:14px;font-family:'Bebas Neue',sans-serif;color:var(--yellow)">${cpl > 0 ? ars(cpl) : '—'}</div></div>
+            <div><div style="font-size:10px;color:var(--white-muted)">CALIFIC.</div><div style="font-size:14px;font-family:'Bebas Neue',sans-serif;color:var(--white)">${calific > 0 ? calific : '—'}</div></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('histGrid').innerHTML = gridHtml;
+}
+
 function selectWeek(idx, el) {
   document.querySelectorAll('.week-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
@@ -656,26 +923,262 @@ function switchTab(id, el) {
   document.getElementById('tab-' + id).classList.add('active');
 }
 
-let modalTarget = 'pending';
-function openModal(s='pending') { modalTarget=s; document.getElementById('newActionDate').value=new Date().toISOString().split('T')[0]; document.getElementById('modalOverlay').classList.add('open'); }
-function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); document.getElementById('newActionText').value=''; }
+// ══════════════════════════════════════════════
+// SISTEMA DE ACCIONES INTERACTIVO
+// ══════════════════════════════════════════════
+
+// Estado en memoria + localStorage
+let acciones = [];
+let ctxTargetId = null;
+
+function genId() { return 'a' + Date.now() + Math.random().toString(36).substr(2,5); }
+
+function saveAcciones() {
+  try { localStorage.setItem('dn_acciones', JSON.stringify(acciones)); } catch(e){}
+}
+
+function loadAcciones() {
+  try {
+    const saved = localStorage.getItem('dn_acciones');
+    if (saved) {
+      acciones = JSON.parse(saved);
+    } else {
+      // Acciones iniciales predeterminadas
+      acciones = [
+        { id: genId(), text: 'Optimizar creatividades para reducir % bad leads', resp: 'agencia', date: '18 Mar', status: 'en-progreso' },
+        { id: genId(), text: 'Seguimiento activo leads calificados (40 contactos sem 1)', resp: 'cliente', date: '17 Mar', status: 'pendiente' },
+        { id: genId(), text: 'Ajustar presupuesto diario para semana siguiente', resp: 'agencia', date: '19 Mar', status: 'pendiente' },
+        { id: genId(), text: 'Grabar contenido orgánico para audiencia fría', resp: 'compartido', date: '20 Mar', status: 'en-progreso' },
+        { id: genId(), text: 'Lanzamiento campañas Meta semana 1', resp: 'agencia', date: '01 Mar', status: 'completada' },
+        { id: genId(), text: 'Setup Apps Script — sync automático diario Meta → Sheets', resp: 'agencia', date: '19 Mar', status: 'completada' },
+        { id: genId(), text: 'Configuración CRM + formularios Meta', resp: 'agencia', date: '01 Mar', status: 'completada' },
+        { id: genId(), text: 'Dashboard en vivo conectado al Sheet', resp: 'agencia', date: '19 Mar', status: 'completada' },
+      ];
+      saveAcciones();
+    }
+  } catch(e) { acciones = []; }
+}
+
+function renderAcciones() {
+  const pending = acciones.filter(a => a.status !== 'completada');
+  const done    = acciones.filter(a => a.status === 'completada');
+
+  document.getElementById('pendingCount').textContent = pending.length;
+  document.getElementById('doneCount').textContent    = done.length;
+
+  const statusConfig = {
+    'en-progreso': { dot: 'in-progress', label: 'En progreso', chip: 'en-progreso' },
+    'pendiente':   { dot: 'pending',     label: 'Pendiente',   chip: 'pendiente' },
+    'demorada':    { dot: 'delayed',     label: 'Demorada',    chip: 'demorada' },
+    'completada':  { dot: 'done',        label: '',            chip: '' },
+  };
+
+  function buildItem(a) {
+    const cfg = statusConfig[a.status] || statusConfig['pendiente'];
+    const chipHtml = cfg.label ? `<span class="status-chip ${cfg.chip}">${cfg.label}</span>` : '';
+    return `<div class="action-item" data-id="${a.id}" oncontextmenu="showCtxMenu(event,'${a.id}')" onclick="showCtxMenu(event,'${a.id}')">
+      <div class="action-dot ${cfg.dot}"></div>
+      <div style="flex:1">
+        <div class="action-text" style="${a.status==='completada'?'text-decoration:line-through;opacity:.5':''}">${a.text}</div>
+        <div class="action-meta">
+          <span class="action-resp ${a.resp}">${a.resp.charAt(0).toUpperCase()+a.resp.slice(1)}</span>
+          <span class="action-date">${a.date}</span>
+          ${chipHtml}
+        </div>
+      </div>
+      <span style="font-size:16px;color:var(--white-muted);padding-left:8px;opacity:.4">⋯</span>
+    </div>`;
+  }
+
+  document.getElementById('pendingList').innerHTML = pending.length
+    ? pending.map(buildItem).join('')
+    : '<div style="padding:16px 18px;font-size:12px;color:var(--white-muted);text-align:center">Sin acciones pendientes</div>';
+
+  document.getElementById('doneList').innerHTML = done.length
+    ? done.map(buildItem).join('')
+    : '<div style="padding:16px 18px;font-size:12px;color:var(--white-muted);text-align:center">Sin acciones completadas aún</div>';
+}
+
+// ── CONTEXT MENU ──────────────────────────────
+function showCtxMenu(e, id) {
+  e.preventDefault();
+  e.stopPropagation();
+  ctxTargetId = id;
+  const menu = document.getElementById('ctxMenu');
+  menu.style.display = 'block';
+  const x = Math.min(e.clientX, window.innerWidth - 210);
+  const y = Math.min(e.clientY, window.innerHeight - 230);
+  menu.style.left = x + 'px';
+  menu.style.top  = y + 'px';
+}
+
+function hideCtxMenu() {
+  document.getElementById('ctxMenu').style.display = 'none';
+  ctxTargetId = null;
+}
+
+function ctxAction(action) {
+  hideCtxMenu();
+  if (!ctxTargetId) return;
+  const idx = acciones.findIndex(a => a.id === ctxTargetId);
+  if (idx === -1) return;
+
+  if (action === 'eliminar') {
+    if (confirm('¿Eliminar esta acción?')) {
+      acciones.splice(idx, 1);
+    }
+  } else if (action === 'completada') {
+    acciones[idx].status = 'completada';
+    acciones[idx].date = new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'short'});
+  } else {
+    acciones[idx].status = action;
+  }
+
+  saveAcciones();
+  renderAcciones();
+}
+
+document.addEventListener('click', function(e) {
+  if (!document.getElementById('ctxMenu').contains(e.target)) hideCtxMenu();
+});
+document.addEventListener('keydown', function(e) { if(e.key==='Escape') hideCtxMenu(); });
+
+// ── MODAL NUEVA ACCIÓN ─────────────────────────
+// ══════════════════════════════════════════════
+// SISTEMA DE ACCIONES INTERACTIVO
+// ══════════════════════════════════════════════
+
+let acciones = [];
+let ctxTargetId = null;
+
+function genId() { return 'a' + Date.now() + Math.random().toString(36).substr(2,5); }
+
+function saveAcciones() {
+  try { localStorage.setItem('dn_acciones', JSON.stringify(acciones)); } catch(e){}
+}
+
+function loadAcciones() {
+  try {
+    const saved = localStorage.getItem('dn_acciones');
+    if (saved) {
+      acciones = JSON.parse(saved);
+    } else {
+      acciones = [
+        { id: genId(), text: 'Optimizar creatividades para reducir % bad leads', resp: 'agencia', date: '18 Mar', status: 'en-progreso' },
+        { id: genId(), text: 'Seguimiento activo leads calificados (40 contactos sem 1)', resp: 'cliente', date: '17 Mar', status: 'pendiente' },
+        { id: genId(), text: 'Ajustar presupuesto diario para semana siguiente', resp: 'agencia', date: '19 Mar', status: 'pendiente' },
+        { id: genId(), text: 'Grabar contenido orgánico para audiencia fría', resp: 'compartido', date: '20 Mar', status: 'en-progreso' },
+        { id: genId(), text: 'Lanzamiento campañas Meta semana 1', resp: 'agencia', date: '01 Mar', status: 'completada' },
+        { id: genId(), text: 'Setup Apps Script — sync automático diario Meta Sheets', resp: 'agencia', date: '19 Mar', status: 'completada' },
+        { id: genId(), text: 'Configuración CRM + formularios Meta', resp: 'agencia', date: '01 Mar', status: 'completada' },
+        { id: genId(), text: 'Dashboard en vivo conectado al Sheet', resp: 'agencia', date: '19 Mar', status: 'completada' },
+      ];
+      saveAcciones();
+    }
+  } catch(e) { acciones = []; }
+}
+
+function renderAcciones() {
+  const pending = acciones.filter(a => a.status !== 'completada');
+  const done    = acciones.filter(a => a.status === 'completada');
+  document.getElementById('pendingCount').textContent = pending.length;
+  document.getElementById('doneCount').textContent    = done.length;
+
+  const statusConfig = {
+    'en-progreso': { dot: 'in-progress', label: 'En progreso', chip: 'en-progreso' },
+    'pendiente':   { dot: 'pending',     label: 'Pendiente',   chip: 'pendiente' },
+    'demorada':    { dot: 'delayed',     label: 'Demorada',    chip: 'demorada' },
+    'completada':  { dot: 'done',        label: '',            chip: '' },
+  };
+
+  function buildItem(a) {
+    const cfg = statusConfig[a.status] || statusConfig['pendiente'];
+    const chipHtml = cfg.label ? '<span class="status-chip ' + cfg.chip + '">' + cfg.label + '</span>' : '';
+    return '<div class="action-item" data-id="' + a.id + '" oncontextmenu="showCtxMenu(event,'' + a.id + '')" onclick="showCtxMenu(event,'' + a.id + '')">' +
+      '<div class="action-dot ' + cfg.dot + '"></div>' +
+      '<div style="flex:1">' +
+        '<div class="action-text" style="' + (a.status==='completada'?'text-decoration:line-through;opacity:.5':'') + '">' + a.text + '</div>' +
+        '<div class="action-meta">' +
+          '<span class="action-resp ' + a.resp + '">' + a.resp.charAt(0).toUpperCase() + a.resp.slice(1) + '</span>' +
+          '<span class="action-date">' + a.date + '</span>' +
+          chipHtml +
+        '</div>' +
+      '</div>' +
+      '<span style="font-size:16px;color:var(--white-muted);padding-left:8px;opacity:.4">⋯</span>' +
+    '</div>';
+  }
+
+  document.getElementById('pendingList').innerHTML = pending.length
+    ? pending.map(buildItem).join('')
+    : '<div style="padding:16px 18px;font-size:12px;color:var(--white-muted);text-align:center">Sin acciones pendientes</div>';
+
+  document.getElementById('doneList').innerHTML = done.length
+    ? done.map(buildItem).join('')
+    : '<div style="padding:16px 18px;font-size:12px;color:var(--white-muted);text-align:center">Sin acciones completadas</div>';
+}
+
+function showCtxMenu(e, id) {
+  e.preventDefault();
+  e.stopPropagation();
+  ctxTargetId = id;
+  const menu = document.getElementById('ctxMenu');
+  menu.style.display = 'block';
+  const x = Math.min(e.clientX, window.innerWidth - 210);
+  const y = Math.min(e.clientY, window.innerHeight - 240);
+  menu.style.left = x + 'px';
+  menu.style.top  = y + 'px';
+}
+
+function hideCtxMenu() {
+  document.getElementById('ctxMenu').style.display = 'none';
+  ctxTargetId = null;
+}
+
+function ctxAction(action) {
+  hideCtxMenu();
+  if (!ctxTargetId) return;
+  const idx = acciones.findIndex(a => a.id === ctxTargetId);
+  if (idx === -1) return;
+  if (action === 'eliminar') {
+    if (confirm('¿Eliminar esta acción?')) { acciones.splice(idx, 1); }
+  } else if (action === 'completada') {
+    acciones[idx].status = 'completada';
+    acciones[idx].date = new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'short'});
+  } else {
+    acciones[idx].status = action;
+  }
+  saveAcciones();
+  renderAcciones();
+}
+
+document.addEventListener('click', function(e) {
+  if (!document.getElementById('ctxMenu').contains(e.target)) hideCtxMenu();
+});
+document.addEventListener('keydown', function(e) { if(e.key==='Escape') hideCtxMenu(); });
+
+function openModal(s) {
+  document.getElementById('newActionDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.getElementById('newActionText').value = '';
+}
+
 function addAction() {
   const text = document.getElementById('newActionText').value.trim();
   if (!text) return;
-  const resp=document.getElementById('newActionResp').value;
-  const date=document.getElementById('newActionDate').value;
-  const status=document.getElementById('newActionStatus').value;
-  const df=date?new Date(date+'T00:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'short'}):'—';
-  const dc=modalTarget==='done'?'done':status==='en-progreso'?'in-progress':'pending';
-  const ch=modalTarget==='done'?'':`<span class="status-chip ${status}">${status==='en-progreso'?'En progreso':'Pendiente'}</span>`;
-  const item=document.createElement('div');
-  item.className='action-item';
-  item.innerHTML=`<div class="action-dot ${dc}"></div><div><div class="action-text">${text}</div><div class="action-meta"><span class="action-resp ${resp}">${resp.charAt(0).toUpperCase()+resp.slice(1)}</span><span class="action-date">${df}</span>${ch}</div></div>`;
-  document.getElementById(modalTarget==='done'?'doneList':'pendingList').appendChild(item);
-  const cId=modalTarget==='done'?'doneCount':'pendingCount';
-  document.getElementById(cId).textContent=parseInt(document.getElementById(cId).textContent)+1;
+  const resp   = document.getElementById('newActionResp').value;
+  const date   = document.getElementById('newActionDate').value;
+  const status = document.getElementById('newActionStatus').value;
+  const df = date ? new Date(date+'T00:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'short'}) : '-';
+  acciones.unshift({ id: genId(), text, resp, date: df, status });
+  saveAcciones();
+  renderAcciones();
   closeModal();
 }
+
 document.getElementById('modalOverlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
 
 function saveNotes() {
@@ -699,7 +1202,19 @@ try {
 const months=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
 const now=new Date();
 document.getElementById('currentDate').textContent=months[now.getMonth()]+' '+now.getFullYear();
+loadAcciones();
+renderAcciones();
+loadAcciones();
+renderAcciones();
 loadSheetData();
 </script>
+<!-- CONTEXT MENU -->
+<div id="ctxMenu" class="ctx-menu" style="display:none">
+  <div class="ctx-item" onclick="ctxAction('progreso')"><span class="ctx-icon">🔵</span>Marcar En progreso</div>
+  <div class="ctx-item" onclick="ctxAction('pendiente')"><span class="ctx-icon">🟡</span>Marcar Pendiente</div>
+  <div class="ctx-item" onclick="ctxAction('demorada')"><span class="ctx-icon">🔴</span>Marcar Demorada</div>
+  <div class="ctx-item" onclick="ctxAction('completada')"><span class="ctx-icon">✅</span>Mover a Completadas</div>
+  <div class="ctx-item danger" onclick="ctxAction('eliminar')"><span class="ctx-icon">🗑</span>Eliminar</div>
+</div>
 </body>
 </html>
